@@ -38,6 +38,9 @@ def get_video_details(video_id):
     if 'items' in response:
         video = response['items'][0]
         snippet = video['snippet']
+        channel_id = snippet['channelId']
+        channel_details = get_channel_details(channel_id)
+
         details = {
             'title': snippet['title'],
             'description': snippet['description'],
@@ -48,7 +51,29 @@ def get_video_details(video_id):
             'thumbnail': snippet['thumbnails']['medium']['url'],
             'video_url': f'https://www.youtube.com/watch?v={video_id}',
             'channel_name': snippet['channelTitle'],
-            'channel_thumbnail': snippet['thumbnails']['medium']['url'],  # Channel thumbnail
+            'channel_thumbnail': channel_details['thumbnail'],  # Channel thumbnail
+        }
+        return details
+    else:
+        return None
+
+def get_channel_details(channel_id):
+    youtube = googleapiclient.discovery.build(
+        YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=API_KEY)
+
+    request = youtube.channels().list(
+        part='snippet',
+        id=channel_id
+    )
+
+    response = request.execute()
+
+    if 'items' in response:
+        channel = response['items'][0]
+        snippet = channel['snippet']
+        details = {
+            'channel_name': snippet['title'],
+            'thumbnail': snippet['thumbnails']['medium']['url'],
         }
         return details
     else:
